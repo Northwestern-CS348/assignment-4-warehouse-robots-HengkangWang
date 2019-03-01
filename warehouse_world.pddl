@@ -1,4 +1,4 @@
-(define (domain warehouse)
+﻿(define (domain warehouse)
 	(:requirements :typing)
 	(:types robot pallette - bigobject
         	location shipment order saleitem)
@@ -31,4 +31,27 @@
       :effect (and (started ?s) (packing-at ?s ?l) (not (unstarted ?s)) (not (available ?l)))
    )
 
+   (:action robotMove
+      :parameters(?r - robot ?l1 - location ?l2 - location)
+      :precondition(and (at ?r ?l1) (no-robot ?l2) (connected ?l1 ?l2))
+      :effect(and(at ?r ?l2) (no-robot ?l1))
+   )
+   
+   (:action robotMoveWithPallette
+      :parameters(?r - robot ?l1 - location ?l2 - location ?p - pallette)
+      :precondition(and (at ?r ?l1) (no-robot ?l2) (connected ?l1 ?l2) (at ?p ?l1) (no-pallette ?l2))
+      :effect(and(at ?r ?l2) (no-robot ?l1) (at ?p ?l2) (no-pallette ?l1))
+   )
+   
+   (:action moveItemFromPalletteToShipment
+      :parameters(?l - location ?s - shipment ?o - order ?p - pallette ?si - saleitem)
+      :precondition(and (at ?p ?l) (ships ?s ?o) (packing-location ?l) (packing-at ?s ?l) (contains ?p ?si) (not (available ?l)))
+      :effect(and (not (contains ?p ?si)) (includes ?s ?si))
+   )
+   
+   (:action completeShipment
+      :parameters(?s - shipment ?o - order ?l - location)
+      :precondition(and (started ?s) (not(unstarted ?s)) (ships ?s ?o) (not (available ?l)) (packing-at ?s ?l))
+      :effect(and (not (started ?s)) (unstarted ?s) (not (ships ?s ?o)) (available ?l) (not (packing-at ?s ?l)))
+   )
 )
